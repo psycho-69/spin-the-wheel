@@ -1,3 +1,44 @@
+canvas {
+	margin-top: 20px;
+	background-color: #111;
+	border: 5px solid fuchsia;
+	border-radius: 50%;
+	box-shadow: 0 0 40px fuchsia;
+}
+
+canvas {
+	width: 90vw;
+	height: 90vw;
+	max-width: 400px;
+	max-height: 400px;
+}
+
+#difficulty-select {
+	position: absolute;
+	top: 50px;
+	right: 10px;
+	margin: 0;
+	padding: 10px;
+	font-size: 16px;
+	background: #111;
+	color: hotpink;
+	border: 1px solid hotpink;
+	z-index: 11;
+}
+
+
+@media (max-width: 600px) {
+	#result-modal {
+		font-size: 6vw;
+	}
+
+	.neon-modal-btn {
+		font-size: 5vw;
+		padding: 4vw 6vw;
+	}
+}
+
+
 body {
 	background-color: #0a0a0a;
 	color: #fuchsia;
@@ -7,13 +48,7 @@ body {
 	padding: 0;
 }
 
-canvas {
-	margin-top: 20px;
-	background-color: #111;
-	border: 5px solid fuchsia;
-	border-radius: 50%;
-	box-shadow: 0 0 40px fuchsia;
-}
+
 
 /* #spinBtn {
 	background: fuchsia;
