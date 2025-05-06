@@ -1,24 +1,27 @@
-const options = [
-	"Kiss - 2min", "Strip one item", "Massage - 3min", "Truth", "Dare",
-	"Tease - 2min", "Spank - 1min", "Moan Challenge", "Roleplay - 5min", "Wildcard"
-];
-const options_dummy = [
-	"1 - 2min", "1 one item", "1 - 3min", "Truth", "Dare",
-	"1 - 2min", "1 - 1min", "1 Challenge", "1 - 5min", "Wildcard"
-];
-
 const optionSets = {
 	romantic: [
-		"Kiss - 1min", "Hug - 1min", "Compliment each other",
-		"Hold hands - 2min", "Massage back - 2min", "Stare lovingly - 1min"
+		"Kiss - 1min", "Hug - 1min", "Hold hands - 2min", "Massage back - 2min", "Stare lovingly - 1min",
+		"Compliment each other", "Whisper sweet nothings", "Forehead kiss", "Dance together - 2min", "Feed each other",
+		"Cuddle - 3min", "Brush hair", "Make a heart with hands", "Sing a love song", "Plan a date",
+		"Write a note", "Gaze into eyes - 1min", "Share a memory", "Trace fingers", "Smile challenge",
+		"Blow a kiss", "Touch cheeks", "Count heartbeat", "Tickle - 30sec", "Describe what you love",
+		"Fake proposal", "Slow dance", "Take a selfie", "Laugh together", "Make a pinky promise"
 	],
 	naughty: [
-		"Kiss - 2min", "Spank - 1min", "Strip 1 item", "Lick neck - 2min",
-		"Whisper a fantasy", "Touch under clothes - 2min", "Moan Challenge - 1min"
+		"Kiss - 2min", "Spank - 1min", "Strip 1 item", "Lick neck - 2min", "Whisper a fantasy",
+		"Touch under clothes - 2min", "Moan Challenge - 1min", "Bite earlobe", "Kiss stomach", "Sit on lap",
+		"Tease with ice", "Blindfold - 2min", "Kiss inner thigh", "Nipple tease - 2min", "Sexy photo dare",
+		"Seductive dance", "Use a toy (clothes on)", "Tell a dirty joke", "Tease with feather", "Body shot",
+		"Slow kiss - 3min", "Undo a button/zip", "Write on body", "Describe a hot dream", "Dirty whisper",
+		"Put hands inside shirt", "Wet kiss challenge", "Simulate a moan", "Smell neck - 1min", "Roleplay start"
 	],
 	extreme: [
-		"Oral - 3min", "Blindfold & Tease - 5min", "Spank hard - 2min", "Edging - 5min",
-		"Dirty Talk - 3min", "Use a toy - 4min", "Moan Challenge - 2min"
+		"Oral - 3min", "Blindfold & Tease - 5min", "Spank hard - 2min", "Edging - 5min", "Use a toy - 4min",
+		"Dirty Talk - 3min", "Moan Challenge - 2min", "Suck fingers", "Tongue tease", "Strip completely",
+		"Roleplay intense", "Ice cube down body", "BDSM-lite tease", "Simulated grinding", "Breath play (safe!)",
+		"Restraint play", "Undress each other", "Spit kiss", "Dirty dare", "Candle drip (careful)",
+		"Lick chest", "Makeout - 5min", "Blindfold oral hint", "Talk during touch", "Use whip/light flogger",
+		"Act a porn scene", "Kink confession", "Body worship", "Command game", "Nude photo dare"
 	]
 };
 
@@ -72,6 +75,10 @@ const resultModal = document.getElementById("result-modal");
 const resultText = document.getElementById("result-text");
 const countdownEl = document.getElementById("countdown");
 const moan = document.getElementById("moan");
+let difficultyLevels = ["romantic", "naughty", "extreme"];
+let currentLevelIndex = 0;
+let currentOptions = [];
+currentOptions = [...optionSets[difficultyLevels[currentLevelIndex]]];
 
 let spinCount = localStorage.getItem('spinCount') ? parseInt(localStorage.getItem('spinCount')) : 0;
 
@@ -79,14 +86,39 @@ const colors = ["#ff00ff", "#cc00cc", "#990099", "#660066", "#330033"];
 const arc = Math.PI * 2 / optionSets.romantic.length;
 let angle = 0;
 
-let currentOptions = [];
-
 function loadOptions() {
-	const level = document.getElementById("difficulty-select").value;
-	currentOptions = [...optionSets[level]];
+	currentLevelIndex = difficultyLevels.indexOf(document.getElementById("difficulty-select").value);
+	currentOptions = [...optionSets[difficultyLevels[currentLevelIndex]]];
 	drawWheel();
 }
+
 loadOptions();
+
+function getRandomOption() {
+	if (currentOptions.length === 0) {
+		// If current level exhausted, move up difficulty
+		if (currentLevelIndex < difficultyLevels.length - 1) {
+			currentLevelIndex++;
+		}
+		currentOptions = [...optionSets[difficultyLevels[currentLevelIndex]]];
+	}
+
+	const randomIndex = Math.floor(Math.random() * currentOptions.length);
+	const selected = currentOptions.splice(randomIndex, 1)[0]; // remove from pool
+	spinCount++;
+
+	// escalate difficulty every 3 spins
+	if (spinCount % 3 === 0 && currentLevelIndex < difficultyLevels.length - 1) {
+		currentLevelIndex++;
+		currentOptions = [...optionSets[difficultyLevels[currentLevelIndex]]];
+	}
+
+	return selected;
+}
+
+const selectedOption = getRandomOption();
+resultText.innerText = selectedOption;
+// play sound, show modal, etc.
 
 function drawWheel() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height); // clear previous wheel
@@ -247,58 +279,57 @@ document.getElementById("difficulty-select").addEventListener("change", function
 	loadOptions();
 });
 
-document.addEventListener("DOMContentLoaded", () => {
-	loadOptions(); // draws wheel based on default difficulty
-});
+// document.addEventListener("DOMContentLoaded", () => {
+// 	loadOptions(); // draws wheel based on default difficulty
+// });
 
-function spinTheWheel() {
-	const spins = 10 + Math.floor(Math.random() * 5); // random spin rounds
-	const totalSlices = currentOptions.length;
-	const arc = Math.PI * 2 / totalSlices;
+// function spinTheWheel() {
+// 	const spins = 10 + Math.floor(Math.random() * 5); // random spin rounds
+// 	const totalSlices = currentOptions.length;
+// 	const arc = Math.PI * 2 / totalSlices;
 
-	let rotation = spins * 360 + Math.random() * 360;
-	let finalAngle = (rotation % 360) * Math.PI / 180;
-	let index = totalSlices - Math.floor(finalAngle / (2 * Math.PI) * totalSlices) - 1;
+// 	let rotation = spins * 360 + Math.random() * 360;
+// 	let finalAngle = (rotation % 360) * Math.PI / 180;
+// 	let index = totalSlices - Math.floor(finalAngle / (2 * Math.PI) * totalSlices) - 1;
 
-	const selectedOption = currentOptions[index];
+// 	const selectedOption = currentOptions[index];
 
-	// Spin animation
-	canvas.style.transition = 'transform 4s ease-out';
-	canvas.style.transform = `rotate(${rotation}deg)`;
+// 	// Spin animation
+// 	canvas.style.transition = 'transform 4s ease-out';
+// 	canvas.style.transform = `rotate(${rotation}deg)`;
 
-	setTimeout(() => {
-		canvas.style.transition = 'none';
-		canvas.style.transform = 'rotate(0deg)';
-		showResult(selectedOption);
-	}, 4000);
-}
+// 	setTimeout(() => {
+// 		canvas.style.transition = 'none';
+// 		canvas.style.transform = 'rotate(0deg)';
+// 		showResult(selectedOption);
+// 	}, 4000);
+// }
 
-spinBtn.addEventListener("click", () => {
-	spinCount++;
-	console.log('spinCount: ', spinCount);
-	localStorage.setItem('spinCount', spinCount);
+// spinBtn.addEventListener("click", () => {
+// 	localStorage.setItem('spinCount', spinCount);
+// 	console.log('spinCount: ', spinCount);
 
-	if (spinCount % 5 === 0) {
-		showResult("🎉 SECRET CHALLENGE UNLOCKED! 🎉");
-	} else {
-		spinTheWheel();
-	}
-});
+// 	if (spinCount % 5 === 0 && spinCount > 0) {
+// 		showResult("🎉 SECRET CHALLENGE UNLOCKED! 🎉");
+// 	} else {
+// 		spinTheWheel();
+// 	}
+// });
 
-function showResult(text) {
-	resultText.textContent = text;
-	resultModal.style.display = "block";
+// function showResult(text) {
+// 	resultText.textContent = text;
+// 	resultModal.style.display = "block";
 
-	if (text.toLowerCase().includes("moan")) {
-		moan.play();
-	}
+// 	if (text.toLowerCase().includes("moan")) {
+// 		moan.play();
+// 	}
 
-	if (text.includes("min")) {
-		startCountdown(extractMinutes(text));
-	}
-}
+// 	if (text.includes("min")) {
+// 		startCountdown(extractMinutes(text));
+// 	}
+// }
 
-function extractMinutes(text) {
-	const match = text.match(/(\d+)\s*min/);
-	return match ? parseInt(match[1]) : 0;
-}
+// function extractMinutes(text) {
+// 	const match = text.match(/(\d+)\s*min/);
+// 	return match ? parseInt(match[1]) : 0;
+// }
