@@ -4,94 +4,17 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Spin the Wheel - Kinky Neon</title>
-	<style>
-		body {
-			background-color: #0a0a0a;
-			color: #fuchsia;
-			font-family: 'Segoe UI', sans-serif;
-			text-align: center;
-			margin: 0;
-			padding: 0;
-		}
-
-		canvas {
-			margin-top: 20px;
-			background-color: #111;
-			border: 5px solid fuchsia;
-			border-radius: 50%;
-			box-shadow: 0 0 40px fuchsia;
-		}
-
-		/* #spinBtn {
-			background: fuchsia;
-			color: black;
-			border: none;
-			padding: 10px 20px;
-			font-size: 1.2em;
-			cursor: pointer;
-			margin: 10px;
-			border-radius: 10px;
-		} */
-
-		#result-modal {
-			display: none;
-			position: fixed;
-			top: 0;
-			left: 0;
-			right: 0;
-			bottom: 0;
-			background: rgba(0, 0, 0, 0.8);
-			justify-content: center;
-			align-items: center;
-			flex-direction: column;
-			color: #fff;
-			font-size: 2em;
-			z-index: 10;
-		}
-
-
-		#challenges {
-			margin-top: 20px;
-			color: #ff69b4;
-		}
-
-		.neon-modal-btn {
-			margin-top: 20px;
-			padding: 10px 20px;
-			background-color: transparent;
-			color: #ff4bff;
-			font-size: 18px;
-			border: 2px solid #ff4bff;
-			border-radius: 8px;
-			cursor: pointer;
-			transition: all 0.3s ease;
-			box-shadow: 0 0 10px #ff4bff, 0 0 20px #ff4bff inset;
-		}
-
-		.neon-modal-btn:hover {
-			background-color: #ff4bff;
-			color: black;
-			box-shadow: 0 0 20px #ff4bff, 0 0 40px #ff4bff inset;
-			transform: scale(1.05);
-		}
-
-		#countdown {
-			margin-top: 10px;
-			font-size: 1.2em;
-			color: #ffccff;
-			text-shadow: 0 0 5px #ff4bff;
-		}
-
-		.modal-button-group {
-	display: flex;
-	gap: 15px;
-	margin-top: 20px;
-}
-	</style>
+	<link rel="stylesheet" href="custom.css">
 </head>
 
 <body>
 	<h1>Spin the Wheel</h1>
+
+	<select id="difficulty-select">
+		<option value="romantic">Romantic (Default)</option>
+		<option value="naughty">Naughty</option>
+		<option value="extreme" disabled>Extreme (Locked)</option>
+	</select>
 	<canvas id="wheel" width="400" height="400"></canvas><br>
 	<button id="spinBtn" class="neon-modal-btn">SPIN</button>
 
@@ -109,168 +32,9 @@
 		<ul id="challenge-list"></ul>
 	</div>
 
-	<audio id="moan" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c3b9b0cb9c.mp3?filename=female-soft-moan-10106.mp3"></audio>
+	<audio id="moan" src=""></audio>
 
-	<script>
-		const options1 = [
-			"Kiss - 2min", "Strip one item", "Massage - 3min", "Truth", "Dare",
-			"Tease - 2min", "Spank - 1min", "Moan Challenge", "Roleplay - 5min", "Wildcard"
-		];
-		const options = [
-			"1 - 2min", "1 one item", "1 - 3min", "Truth", "Dare",
-			"1 - 2min", "1 - 1min", "1 Challenge", "1 - 5min", "Wildcard"
-		];
-
-		const canvas = document.getElementById("wheel");
-		const ctx = canvas.getContext("2d");
-		const spinBtn = document.getElementById("spinBtn");
-		const skipBtn = document.getElementById("skipTimer");
-		const resultModal = document.getElementById("result-modal");
-		const resultText = document.getElementById("result-text");
-		const countdownEl = document.getElementById("countdown");
-		const moan = document.getElementById("moan");
-
-		let spinCount = localStorage.getItem('spinCount') ? parseInt(localStorage.getItem('spinCount')) : 0;
-
-		const colors = ["#ff00ff", "#cc00cc", "#990099", "#660066", "#330033"];
-		const arc = Math.PI * 2 / options.length;
-		let angle = 0;
-
-		function drawWheel() {
-			for (let i = 0; i < options.length; i++) {
-				const start = angle + i * arc;
-				const end = start + arc;
-				ctx.beginPath();
-				ctx.fillStyle = colors[i % colors.length];
-				ctx.moveTo(200, 200);
-				ctx.arc(200, 200, 200, start, end);
-				ctx.fill();
-				ctx.save();
-				ctx.translate(200, 200);
-				ctx.rotate(start + arc / 2);
-				ctx.fillStyle = "white";
-				ctx.fillText(options[i], 100, 0);
-				ctx.restore();
-			}
-		}
-
-		drawWheel();
-
-		let timer;
-
-		function extractMinutes(text) {
-			const match = text.match(/(\d+)\s*min/);
-			return match ? parseInt(match[1]) : null;
-		}
-
-		function startCountdown(minutes) {
-			let seconds = minutes * 60;
-			clearInterval(timer);
-			timer = setInterval(() => {
-				let min = Math.floor(seconds / 60);
-				let sec = seconds % 60;
-				countdownEl.textContent = `${min}m ${sec}s`;
-				if (--seconds < 0) {
-					clearInterval(timer);
-					countdownEl.textContent = "Time's up!";
-				}
-			}, 1000);
-		}
-
-		skipBtn.onclick = () => {
-			clearInterval(timer);
-			countdownEl.textContent = "Skipped!";
-		};
-
-		const challenges = {
-			spins: {
-				name: "Spin 10 times",
-				description: "Spin 10 times to unlock bonus option",
-				progress: localStorage.getItem('spinChallengeProgress') ? parseInt(localStorage.getItem('spinChallengeProgress')) : 0,
-				threshold: 10,
-				unlocked: false
-			},
-			moanLand: {
-				name: "Land on 'Moan Challenge' 3 times",
-				description: "Unlock kinky surprise",
-				progress: localStorage.getItem('specialOptionChallengeProgress') ? parseInt(localStorage.getItem('specialOptionChallengeProgress')) : 0,
-				threshold: 3,
-				unlocked: false
-			}
-		};
-
-		function updateChallengeProgress() {
-			// if (challenges.spins.progress >= challenges.spins.threshold && !challenges.spins.unlocked) {
-			// 	challenges.spins.unlocked = true;
-			// 	alert("Challenge Complete: Spin 10 times - Bonus option unlocked!");
-			// }
-			// if (challenges.moanLand.progress >= challenges.moanLand.threshold && !challenges.moanLand.unlocked) {
-			// 	challenges.moanLand.unlocked = true;
-			// 	alert("Challenge Complete: Moan Challenge landed 3 times - Kinky unlocked!");
-			// }
-
-			document.getElementById("challenge-list").innerHTML = `
-        <li>${challenges.spins.name}: ${challenges.spins.progress}/${challenges.spins.threshold} ${challenges.spins.unlocked ? '(Unlocked)' : ''}</li>
-        <li>${challenges.moanLand.name}: ${challenges.moanLand.progress}/${challenges.moanLand.threshold} ${challenges.moanLand.unlocked ? '(Unlocked)' : ''}</li>
-      `;
-		}
-
-		function trackSpin(result) {
-			spinCount++;
-			localStorage.setItem('spinCount', spinCount);
-			challenges.spins.progress++;
-			localStorage.setItem('spinChallengeProgress', challenges.spins.progress);
-
-			if (result === "Moan Challenge") {
-				challenges.moanLand.progress++;
-				localStorage.setItem('specialOptionChallengeProgress', challenges.moanLand.progress);
-			}
-
-			updateChallengeProgress();
-		}
-
-		spinBtn.onclick = function () {
-			spinBtn.disabled = true;
-			let spinAngle = Math.floor(Math.random() * 360 + 1080);
-			let duration = 4000;
-			let start = null;
-
-			function animate(timestamp) {
-				if (!start) start = timestamp;
-				let progress = timestamp - start;
-				let eased = progress / duration;
-				angle = spinAngle * eased;
-				ctx.clearRect(0, 0, canvas.width, canvas.height);
-				drawWheel();
-
-				if (progress < duration) {
-					requestAnimationFrame(animate);
-				} else {
-					let selected = Math.floor(options.length - (angle % 360) / (360 / options.length));
-					if (selected >= options.length) selected = 0;
-					const result = options[selected];
-					resultText.textContent = result;
-					resultModal.style.display = "flex";
-					moan.play();
-					trackSpin(result);
-
-					let minutes = extractMinutes(result);
-					if (minutes) startCountdown(minutes);
-
-					spinBtn.disabled = false;
-				}
-			}
-			requestAnimationFrame(animate);
-		};
-
-		updateChallengeProgress();
-
-		document.getElementById("close-result").onclick = function () {
-			document.getElementById("result-modal").style.display = "none";
-		};
-
-	</script>
-	</script>
+	<script src="custom.js"></script>
 </body>
 
 </html>
